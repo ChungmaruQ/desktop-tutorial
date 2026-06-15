@@ -7,16 +7,21 @@
     <title>Office Hours Door Display</title>
     <style>
       :root {
-        --bg: #f7f4ee;
-        --ink: #20282a;
-        --muted: #606968;
-        --line: #d8d4cc;
-        --accent: #b66c2a;
-        --accent-soft: #efe5d8;
-        --office: #2f7b65;
-        --away: #a93636;
-        --focus: #6a4f9a;
-        --remote: #2f6577;
+        --bg: #f5f7ee;
+        --panel: #fffdf8;
+        --ink: #172326;
+        --muted: #5f6d70;
+        --line: #d8dfda;
+        --accent: #e07a2f;
+        --accent-soft: #fff0df;
+        --accent-ink: #3b2210;
+        --office: #138a6a;
+        --away: #c83c52;
+        --focus: #7252c7;
+        --remote: #2677a8;
+        --sun: #f2be3e;
+        --sky: #6aa9d8;
+        --leaf: #22a06b;
       }
 
       * {
@@ -55,22 +60,39 @@
       .top {
         position: absolute;
         inset: 0 0 auto 0;
-        height: 68px;
-        border-bottom: 1px solid var(--line);
+        height: 78px;
+        background: var(--panel);
+        border-bottom: 2px solid #1f2d30;
+      }
+
+      .top::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 800px;
+        height: 8px;
+        background: linear-gradient(
+          90deg,
+          var(--leaf) 0 22%,
+          var(--sun) 22% 47%,
+          var(--accent) 47% 73%,
+          var(--sky) 73% 100%
+        );
       }
 
       .brand {
         position: absolute;
-        left: 22px;
-        top: 12px;
+        left: 24px;
+        top: 18px;
       }
 
       .name {
-        margin-top: 6px;
+        margin-top: 7px;
         max-width: 430px;
         overflow: hidden;
         color: var(--ink);
-        font-size: 28px;
+        font-size: 30px;
         font-weight: 900;
         line-height: 1;
         white-space: nowrap;
@@ -78,8 +100,8 @@
 
       .date-block {
         position: absolute;
-        right: 22px;
-        top: 12px;
+        right: 24px;
+        top: 18px;
         width: 210px;
         text-align: right;
       }
@@ -94,8 +116,8 @@
 
       .battery {
         position: absolute;
-        right: 245px;
-        top: 26px;
+        right: 248px;
+        top: 32px;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -137,22 +159,23 @@
 
       .status-dot {
         position: absolute;
-        left: 21px;
-        top: 174px;
+        left: 28px;
+        top: 155px;
         display: grid;
         place-items: center;
-        width: 84px;
-        height: 84px;
-        border: 7px solid #d2c6b8;
+        width: 106px;
+        height: 106px;
+        border: 8px solid #ffffff;
         border-radius: 50%;
         background: var(--accent-soft);
+        box-shadow: 0 0 0 7px var(--accent), 0 0 0 13px #203135;
       }
 
       .status-dot::after {
         content: "";
-        width: 38px;
-        height: 38px;
-        border: 7px solid var(--accent);
+        width: 46px;
+        height: 46px;
+        border: 8px solid var(--panel);
         border-radius: 50%;
         background: var(--accent);
         box-sizing: border-box;
@@ -160,30 +183,36 @@
 
       .status {
         position: absolute;
-        left: 126px;
-        top: 159px;
-        width: 430px;
+        left: 166px;
+        top: 130px;
+        width: 390px;
       }
 
       .status-label {
+        display: inline-block;
+        padding: 7px 11px;
+        border-radius: 6px;
+        background: var(--accent);
         color: var(--accent);
+        color: #ffffff;
         font-size: 17px;
         font-weight: 900;
         line-height: 1;
+        text-transform: uppercase;
       }
 
       .headline {
-        margin-top: 9px;
+        margin-top: 14px;
         overflow: hidden;
         color: var(--ink);
-        font-size: 58px;
+        font-size: 54px;
         font-weight: 950;
-        line-height: 0.96;
+        line-height: 0.98;
         white-space: nowrap;
       }
 
       .detail {
-        margin-top: 14px;
+        margin-top: 12px;
         overflow: hidden;
         color: var(--muted);
         font-size: 21px;
@@ -194,29 +223,33 @@
 
       .next {
         position: absolute;
-        left: 625px;
-        top: 85px;
-        width: 175px;
-        height: 260px;
-        border-left: 1px solid var(--line);
+        left: 594px;
+        top: 108px;
+        width: 182px;
+        height: 218px;
+        border: 3px solid #1f2d30;
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: 9px 9px 0 var(--sky);
       }
 
       .next .label {
         position: absolute;
-        left: 17px;
-        top: 107px;
-        width: 140px;
+        left: 16px;
+        top: 18px;
+        width: 145px;
+        color: var(--accent);
       }
 
       .next-time {
         position: absolute;
-        left: 17px;
-        top: 127px;
-        width: 150px;
-        color: var(--accent);
-        font-size: 28px;
+        left: 16px;
+        top: 55px;
+        width: 156px;
+        color: var(--ink);
+        font-size: 31px;
         font-weight: 950;
-        line-height: 1.08;
+        line-height: 1.02;
         white-space: normal;
       }
 
@@ -225,54 +258,79 @@
         left: 0;
         bottom: 0;
         width: 800px;
-        height: 115px;
-        border-top: 1px solid var(--line);
+        height: 124px;
+        border-top: 3px solid #1f2d30;
+        background: #eff7f3;
+      }
+
+      .bottom::before {
+        content: "";
+        position: absolute;
+        left: 255px;
+        right: 0;
+        top: 0;
+        height: 8px;
+        background: linear-gradient(
+          90deg,
+          var(--sun) 0 24%,
+          var(--sky) 24% 52%,
+          var(--leaf) 52% 76%,
+          var(--accent) 76% 100%
+        );
       }
 
       .hours {
         position: absolute;
         left: 0;
         bottom: 0;
-        width: 230px;
-        height: 115px;
-        padding: 16px 20px;
-        border-right: 1px solid var(--line);
+        width: 255px;
+        height: 124px;
+        padding: 17px 22px;
+        background: #143f3a;
+        border-right: 3px solid #1f2d30;
+      }
+
+      .hours .label {
+        color: #bfe8d9;
       }
 
       .hours-value {
         margin-top: 9px;
-        color: var(--ink);
-        font-size: 24px;
+        color: #ffffff;
+        font-size: 25px;
         font-weight: 950;
         line-height: 1.2;
       }
 
       .agenda {
         position: absolute;
-        left: 250px;
-        right: 20px;
-        bottom: 22px;
-        height: 58px;
+        left: 278px;
+        right: 22px;
+        bottom: 18px;
+        height: 70px;
       }
 
       .agenda-label {
         position: absolute;
-        left: 250px;
-        bottom: 88px;
+        left: 278px;
+        bottom: 93px;
+        color: #1f6c86;
       }
 
       .agenda-item {
         position: absolute;
         top: 0;
-        width: 240px;
-        height: 58px;
-        padding-left: 14px;
-        border-left: 5px solid var(--accent);
+        width: 230px;
+        height: 70px;
+        padding: 10px 12px 10px 15px;
+        border-left: 8px solid var(--accent);
+        border-radius: 8px;
+        background: var(--panel);
       }
 
       .agenda-item.second {
-        left: 270px;
-        border-color: var(--office);
+        left: 252px;
+        border-color: var(--sky);
       }
 
       .agenda-time {
@@ -297,8 +355,8 @@
       .updated {
         position: absolute;
         right: 22px;
-        bottom: 8px;
-        color: #858580;
+        bottom: 7px;
+        color: #657174;
         font-size: 10px;
         font-weight: 700;
       }
