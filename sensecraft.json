@@ -8,6 +8,10 @@
   "next_available": "09:30",
   "current_until": "09:30",
   "todays_hours": "09:30-12:00 / 13:00-17:00",
+  "away_days": [
+    "thu",
+    "fri"
+  ],
   "battery_level": "81%",
   "up_next_1_time": "12:00-14:00",
   "up_next_1_title": "Busy",
@@ -18,6 +22,6 @@
   "up_next_3_time": "",
   "up_next_3_title": "",
   "up_next_3_type": "",
-  "updated_at": "Jun 16, 01:07",
+  "updated_at": "Jun 16, 01:09",
   "source": "calendar"
 }
