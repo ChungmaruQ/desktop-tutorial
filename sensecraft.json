@@ -13,15 +13,15 @@
     "fri"
   ],
   "battery_level": "81%",
-  "up_next_1_time": "12:00-14:00",
-  "up_next_1_title": "Busy",
-  "up_next_1_type": "busy",
-  "up_next_2_time": "14:00-18:00",
-  "up_next_2_title": "Busy",
-  "up_next_2_type": "busy",
+  "up_next_1_time": "",
+  "up_next_1_title": "",
+  "up_next_1_type": "",
+  "up_next_2_time": "",
+  "up_next_2_title": "",
+  "up_next_2_type": "",
   "up_next_3_time": "",
   "up_next_3_title": "",
   "up_next_3_type": "",
-  "updated_at": "Jun 16, 01:09",
+  "updated_at": "Jun 16, 01:20",
   "source": "calendar"
 }
