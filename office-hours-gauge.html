@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta http-equiv="refresh" content="3600">
+    <title>Office Hours Door Display</title>
+    <style>
+      :root {
+        --bg: #f5f7ee;
+        --panel: #fffdf8;
+        --ink: #172326;
+        --muted: #5f6d70;
+        --line: #d8dfda;
+        --accent: #e07a2f;
+        --accent-soft: #fff0df;
+        --accent-ink: #3b2210;
+        --office: #138a6a;
+        --away: #c83c52;
+        --focus: #7252c7;
+        --remote: #2677a8;
+        --sun: #f2be3e;
+        --sky: #6aa9d8;
+        --leaf: #22a06b;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: Inter, Arial, Helvetica, sans-serif;
+      }
+
+      .canvas {
+        position: relative;
+        width: 800px;
+        height: 480px;
+        overflow: hidden;
+        background: var(--bg);
+        transform: scale(var(--scale, 1));
+        transform-origin: top left;
+      }
+
+      .label {
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 800;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+
+      .top {
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 78px;
+        background: var(--panel);
+        border-bottom: 2px solid #1f2d30;
+      }
+
+      .top::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 800px;
+        height: 8px;
+        background: linear-gradient(
+          90deg,
+          var(--leaf) 0 22%,
+          var(--sun) 22% 47%,
+          var(--accent) 47% 73%,
+          var(--sky) 73% 100%
+        );
+      }
+
+      .brand {
+        position: absolute;
+        left: 24px;
+        top: 18px;
+      }
+
+      .name-line {
+        margin-top: 7px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        max-width: 430px;
+      }
+
+      .name {
+        min-width: 0;
+        max-width: 320px;
+        overflow: hidden;
+        color: var(--ink);
+        font-size: 30px;
+        font-weight: 900;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .battery-gauge {
+        display: none;
+        flex: 0 0 auto;
+        position: relative;
+        align-items: center;
+        width: 74px;
+        height: 30px;
+        border: 2px solid #1f2d30;
+        border-radius: 6px;
+        background: #fffdf8;
+        color: #1f2d30;
+      }
+
+      .battery-gauge::after {
+        content: "";
+        position: absolute;
+        right: -6px;
+        top: 9px;
+        width: 4px;
+        height: 8px;
+        border-radius: 0 3px 3px 0;
+        background: #1f2d30;
+      }
+
+      .battery-fill {
+        position: absolute;
+        left: 3px;
+        top: 3px;
+        bottom: 3px;
+        width: 0%;
+        border-radius: 3px;
+        background: var(--battery-color, var(--leaf));
+      }
+
+      .battery-text {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        text-align: center;
+        font-size: 15px;
+        font-weight: 950;
+        line-height: 26px;
+      }
+
+      .date-block {
+        position: absolute;
+        right: 24px;
+        top: 18px;
+        width: 210px;
+        text-align: right;
+      }
+
+      .date {
+        margin-top: 6px;
+        color: var(--ink);
+        font-size: 26px;
+        font-weight: 900;
+        line-height: 1;
+      }
+
+      .status-dot {
+        position: absolute;
+        left: 28px;
+        top: 155px;
+        display: grid;
+        place-items: center;
+        width: 106px;
+        height: 106px;
+        border: 8px solid #ffffff;
+        border-radius: 50%;
+        background: var(--accent-soft);
+        box-shadow: 0 0 0 7px var(--accent), 0 0 0 13px #203135;
+      }
+
+      .status-dot::after {
+        content: "";
+        width: 46px;
+        height: 46px;
+        border: 8px solid var(--panel);
+        border-radius: 50%;
+        background: var(--accent);
+        box-sizing: border-box;
+      }
+
+      .status {
+        position: absolute;
+        left: 166px;
+        top: 130px;
+        width: 390px;
+      }
+
+      .status-label {
+        display: inline-block;
+        padding: 7px 11px;
+        border-radius: 6px;
+        background: var(--accent);
+        color: var(--accent);
+        color: #ffffff;
+        font-size: 17px;
+        font-weight: 900;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+
+      .headline {
+        margin-top: 14px;
+        overflow: hidden;
+        color: var(--ink);
+        font-size: 54px;
+        font-weight: 950;
+        line-height: 0.98;
+        white-space: nowrap;
+      }
+
+      .detail {
+        margin-top: 12px;
+        overflow: hidden;
+        color: var(--muted);
+        font-size: 21px;
+        font-weight: 800;
+        line-height: 1.1;
+        white-space: nowrap;
+      }
+
+      .next {
+        position: absolute;
+        left: 594px;
+        top: 108px;
+        width: 182px;
+        height: 218px;
+        border: 3px solid #1f2d30;
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: 9px 9px 0 var(--sky);
+      }
+
+      .next .label {
+        position: absolute;
+        left: 16px;
+        top: 18px;
+        width: 145px;
+        color: var(--accent);
+      }
+
+      .next-time {
+        position: absolute;
+        left: 16px;
+        top: 55px;
+        width: 156px;
+        color: var(--ink);
+        font-size: 31px;
+        font-weight: 950;
+        line-height: 1.02;
+        white-space: normal;
+      }
+
+      .bottom {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 800px;
+        height: 124px;
+        border-top: 3px solid #1f2d30;
+        background: #eff7f3;
+      }
+
+      .bottom::before {
+        content: "";
+        position: absolute;
+        left: 255px;
+        right: 0;
+        top: 0;
+        height: 8px;
+        background: linear-gradient(
+          90deg,
+          var(--sun) 0 24%,
+          var(--sky) 24% 52%,
+          var(--leaf) 52% 76%,
+          var(--accent) 76% 100%
+        );
+      }
+
+      .hours {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 255px;
+        height: 124px;
+        padding: 17px 22px;
+        background: #143f3a;
+        border-right: 3px solid #1f2d30;
+      }
+
+      .hours .label {
+        color: #bfe8d9;
+      }
+
+      .hours-value {
+        margin-top: 9px;
+        color: #ffffff;
+        font-size: 25px;
+        font-weight: 950;
+        line-height: 1.2;
+      }
+
+      .agenda {
+        position: absolute;
+        left: 278px;
+        right: 22px;
+        bottom: 18px;
+        height: 70px;
+      }
+
+      .agenda-label {
+        position: absolute;
+        left: 278px;
+        bottom: 93px;
+        color: #1f6c86;
+      }
+
+      .agenda-item {
+        position: absolute;
+        top: 0;
+        width: 230px;
+        height: 70px;
+        padding: 10px 12px 10px 15px;
+        border-left: 8px solid var(--accent);
+        border-radius: 8px;
+        background: var(--panel);
+      }
+
+      .agenda-item.second {
+        left: 252px;
+        border-color: var(--sky);
+      }
+
+      .agenda-time {
+        overflow: hidden;
+        color: var(--muted);
+        font-size: 15px;
+        font-weight: 900;
+        line-height: 1.1;
+        white-space: nowrap;
+      }
+
+      .agenda-title {
+        margin-top: 5px;
+        overflow: hidden;
+        color: var(--ink);
+        font-size: 20px;
+        font-weight: 950;
+        line-height: 1.1;
+        white-space: nowrap;
+      }
+
+      .updated {
+        position: absolute;
+        right: 22px;
+        bottom: 7px;
+        color: #657174;
+        font-size: 10px;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="canvas">
+      <section class="top">
+        <div class="brand">
+          <div class="label">Office Hours</div>
+          <div class="name-line">
+            <div class="name" data-field="display_name">Hyunwoo Kim</div>
+            <div class="battery-gauge" aria-label="Battery level">
+              <div class="battery-fill" aria-hidden="true"></div>
+              <div class="battery-text" data-field="battery_level"></div>
+            </div>
+          </div>
+        </div>
+        <div class="date-block">
+          <div class="label">Today</div>
+          <div class="date" data-field="date">Mon, Jun 15</div>
+        </div>
+      </section>
+
+      <div class="status-dot" aria-hidden="true"></div>
+
+      <section class="status">
+        <div class="status-label" data-field="status_label">Busy</div>
+        <div class="headline" data-field="headline">In a Meeting</div>
+        <div class="detail" data-field="detail">Busy right now.</div>
+      </section>
+
+      <section class="next">
+        <div class="label">Next Available</div>
+        <div class="next-time" data-field="next_available">16:16</div>
+      </section>
+
+      <section class="bottom">
+        <div class="hours">
+          <div class="label">Office Hours</div>
+          <div class="hours-value" data-field="todays_hours">09:30-12:00 / 13:00-17:00</div>
+        </div>
+        <div class="agenda-label label">Up Next</div>
+        <div class="agenda">
+          <div class="agenda-item">
+            <div class="agenda-time" data-field="up_next_1_time">15:31-16:16</div>
+            <div class="agenda-title" data-field="up_next_1_title">Busy</div>
+          </div>
+          <div class="agenda-item second">
+            <div class="agenda-time" data-field="up_next_2_time">17:21-18:21</div>
+            <div class="agenda-title" data-field="up_next_2_title">Office Hours</div>
+          </div>
+        </div>
+      </section>
+
+      <div class="updated">Updated <span data-field="updated_at">Jun 15, 15:51</span></div>
+    </main>
+
+    <script>
+      const fallbackStatus = {
+        display_name: "Hyunwoo Kim",
+        date: "Mon, Jun 15",
+        state: "busy",
+        status_label: "Busy",
+        headline: "In a Meeting",
+        detail: "Busy right now.",
+        next_available: "16:16",
+        todays_hours: "09:30-12:00 / 13:00-17:00",
+        battery_level: "",
+        up_next_1_time: "15:31-16:16",
+        up_next_1_title: "Busy",
+        up_next_2_time: "17:21-18:21",
+        up_next_2_title: "Office Hours",
+        updated_at: "Jun 15, 15:51"
+      };
+
+      const params = new URLSearchParams(window.location.search);
+      const refreshMs = 60 * 60 * 1000;
+      const dataUrl =
+        params.get("data") ||
+        window.OFFICE_HOURS_DATA_URL ||
+        "https://raw.githubusercontent.com/ChungmaruQ/desktop-tutorial/master/sensecraft.json";
+
+      function fitCanvasToViewport() {
+        const width = window.innerWidth || 800;
+        const height = window.innerHeight || 480;
+        const scale = Math.min(1, width / 800, height / 480);
+        document.documentElement.style.setProperty("--scale", String(scale || 1));
+      }
+
+      function withCacheBust(url) {
+        const nextUrl = new URL(url, window.location.href);
+        nextUrl.searchParams.set("_", Date.now().toString());
+        return nextUrl.toString();
+      }
+
+      function applyStatus(status) {
+        document.querySelectorAll("[data-field]").forEach((element) => {
+          const field = element.getAttribute("data-field");
+          element.textContent = status[field] ?? "";
+        });
+
+        updateAgendaVisibility();
+        updateBatteryVisibility();
+        fitDynamicText();
+
+        const state = status.state || "";
+        const root = document.documentElement;
+        if (state === "available") {
+          root.style.setProperty("--accent", "#2f7b65");
+          root.style.setProperty("--accent-soft", "#dcebe5");
+        } else if (state === "away" || state === "leave") {
+          root.style.setProperty("--accent", "#a93636");
+          root.style.setProperty("--accent-soft", "#eedada");
+        } else if (state === "focus") {
+          root.style.setProperty("--accent", "#6a4f9a");
+          root.style.setProperty("--accent-soft", "#e2dced");
+        } else if (state === "remote") {
+          root.style.setProperty("--accent", "#2f6577");
+          root.style.setProperty("--accent-soft", "#dbe7ea");
+        } else if (state === "off_hours" || state === "offsite" || state === "closed") {
+          root.style.setProperty("--accent", "#606968");
+          root.style.setProperty("--accent-soft", "#e8e4dd");
+        } else {
+          root.style.setProperty("--accent", "#e07a2f");
+          root.style.setProperty("--accent-soft", "#fff0df");
+        }
+      }
+
+      function fitDynamicText() {
+        fitTextToWidth(".headline", 54, 36);
+        fitTextToWidth(".detail", 21, 16);
+        fitTextToWidth(".next-time", 31, 23);
+        fitTextToWidth(".hours-value", 25, 18);
+        fitTextToWidth(".agenda-title", 20, 14);
+      }
+
+      function fitTextToWidth(selector, maxPx, minPx) {
+        document.querySelectorAll(selector).forEach((element) => {
+          element.style.fontSize = `${maxPx}px`;
+          if (element.offsetParent === null) return;
+
+          let size = maxPx;
+          while (size > minPx && element.scrollWidth > element.clientWidth) {
+            size -= 1;
+            element.style.fontSize = `${size}px`;
+          }
+        });
+      }
+
+      function updateAgendaVisibility() {
+        const items = document.querySelectorAll(".agenda-item");
+        let visibleCount = 0;
+        items.forEach((item) => {
+          const hasContent = item.textContent.trim().length > 0;
+          item.style.display = hasContent ? "block" : "none";
+          if (hasContent) visibleCount += 1;
+        });
+
+        const label = document.querySelector(".agenda-label");
+        if (label) {
+          label.style.display = visibleCount > 0 ? "block" : "none";
+        }
+      }
+
+      function updateBatteryVisibility() {
+        const gauge = document.querySelector(".battery-gauge");
+        const fill = document.querySelector(".battery-fill");
+        const text = document.querySelector(".battery-text");
+        if (!gauge || !fill || !text) return;
+
+        const rawValue = text.textContent.trim();
+        if (!rawValue) {
+          gauge.style.display = "none";
+          fill.style.width = "0%";
+          return;
+        }
+
+        const numeric = Number(rawValue.replace("%", ""));
+        const percent = Number.isFinite(numeric) ? Math.max(0, Math.min(100, numeric)) : 0;
+        gauge.style.display = "flex";
+        fill.style.width = `${percent}%`;
+        fill.style.background = batteryColor(percent);
+      }
+
+      function batteryColor(percent) {
+        if (percent < 30) return "#d64545";
+        if (percent < 60) return "#f2be3e";
+        return "#22a06b";
+      }
+
+      async function loadStatus() {
+        if (!dataUrl) {
+          applyStatus(fallbackStatus);
+          return;
+        }
+
+        try {
+          const response = await fetch(withCacheBust(dataUrl), { cache: "no-store" });
+          if (!response.ok) throw new Error("Status fetch failed");
+          applyStatus(await response.json());
+        } catch (error) {
+          applyStatus(fallbackStatus);
+        }
+      }
+
+      fitCanvasToViewport();
+      loadStatus();
+      window.addEventListener("resize", fitCanvasToViewport);
+      if (dataUrl) {
+        setInterval(loadStatus, refreshMs);
+      }
+    </script>
+  </body>
+</html>
