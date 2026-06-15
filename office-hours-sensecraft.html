@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=800, height=480, initial-scale=1">
+    <meta http-equiv="refresh" content="3600">
+    <title>Office Hours Door Display</title>
+    <style>
+      :root {
+        --bg: #f7f4ee;
+        --ink: #20282a;
+        --muted: #606968;
+        --line: #d8d4cc;
+        --accent: #b66c2a;
+        --accent-soft: #efe5d8;
+        --office: #2f7b65;
+        --away: #a93636;
+        --focus: #6a4f9a;
+        --remote: #2f6577;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 800px;
+        height: 480px;
+        margin: 0;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: Inter, Arial, Helvetica, sans-serif;
+      }
+
+      .canvas {
+        position: relative;
+        width: 800px;
+        height: 480px;
+        overflow: hidden;
+        background: var(--bg);
+      }
+
+      .label {
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 800;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+
+      .top {
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 68px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .brand {
+        position: absolute;
+        left: 22px;
+        top: 12px;
+      }
+
+      .name {
+        margin-top: 6px;
+        max-width: 430px;
+        overflow: hidden;
+        color: var(--ink);
+        font-size: 28px;
+        font-weight: 900;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .date-block {
+        position: absolute;
+        right: 22px;
+        top: 12px;
+        width: 210px;
+        text-align: right;
+      }
+
+      .date {
+        margin-top: 6px;
+        color: var(--ink);
+        font-size: 26px;
+        font-weight: 900;
+        line-height: 1;
+      }
+
+      .status-dot {
+        position: absolute;
+        left: 21px;
+        top: 174px;
+        width: 84px;
+        height: 84px;
+        border: 7px solid #d2c6b8;
+        border-radius: 50%;
+        background: var(--accent-soft);
+      }
+
+      .status-dot::after {
+        content: "";
+        position: absolute;
+        left: 22px;
+        top: 22px;
+        width: 26px;
+        height: 26px;
+        border: 7px solid var(--accent);
+        border-radius: 50%;
+        background: var(--accent);
+      }
+
+      .status {
+        position: absolute;
+        left: 126px;
+        top: 159px;
+        width: 430px;
+      }
+
+      .status-label {
+        color: var(--accent);
+        font-size: 17px;
+        font-weight: 900;
+        line-height: 1;
+      }
+
+      .headline {
+        margin-top: 9px;
+        overflow: hidden;
+        color: var(--ink);
+        font-size: 58px;
+        font-weight: 950;
+        line-height: 0.96;
+        white-space: nowrap;
+      }
+
+      .detail {
+        margin-top: 14px;
+        overflow: hidden;
+        color: var(--muted);
+        font-size: 21px;
+        font-weight: 800;
+        line-height: 1.1;
+        white-space: nowrap;
+      }
+
+      .next {
+        position: absolute;
+        left: 625px;
+        top: 85px;
+        width: 175px;
+        height: 260px;
+        border-left: 1px solid var(--line);
+      }
+
+      .next .label {
+        position: absolute;
+        left: 17px;
+        top: 107px;
+        width: 140px;
+      }
+
+      .next-time {
+        position: absolute;
+        left: 17px;
+        top: 127px;
+        color: var(--accent);
+        font-size: 34px;
+        font-weight: 950;
+        line-height: 1;
+      }
+
+      .bottom {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 800px;
+        height: 115px;
+        border-top: 1px solid var(--line);
+      }
+
+      .hours {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 230px;
+        height: 115px;
+        padding: 16px 20px;
+        border-right: 1px solid var(--line);
+      }
+
+      .hours-value {
+        margin-top: 9px;
+        color: var(--ink);
+        font-size: 24px;
+        font-weight: 950;
+        line-height: 1.2;
+      }
+
+      .agenda {
+        position: absolute;
+        left: 250px;
+        right: 20px;
+        bottom: 22px;
+        height: 58px;
+      }
+
+      .agenda-label {
+        position: absolute;
+        left: 250px;
+        bottom: 88px;
+      }
+
+      .agenda-item {
+        position: absolute;
+        top: 0;
+        width: 240px;
+        height: 58px;
+        padding-left: 14px;
+        border-left: 5px solid var(--accent);
+      }
+
+      .agenda-item.second {
+        left: 270px;
+        border-color: var(--office);
+      }
+
+      .agenda-time {
+        overflow: hidden;
+        color: var(--muted);
+        font-size: 15px;
+        font-weight: 900;
+        line-height: 1.1;
+        white-space: nowrap;
+      }
+
+      .agenda-title {
+        margin-top: 5px;
+        overflow: hidden;
+        color: var(--ink);
+        font-size: 20px;
+        font-weight: 950;
+        line-height: 1.1;
+        white-space: nowrap;
+      }
+
+      .updated {
+        position: absolute;
+        right: 22px;
+        bottom: 8px;
+        color: #858580;
+        font-size: 10px;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="canvas">
+      <section class="top">
+        <div class="brand">
+          <div class="label">Office Hours</div>
+          <div class="name" data-field="display_name">Hyunwoo Kim</div>
+        </div>
+        <div class="date-block">
+          <div class="label">Today</div>
+          <div class="date" data-field="date">Mon, Jun 15</div>
+        </div>
+      </section>
+
+      <div class="status-dot" aria-hidden="true"></div>
+
+      <section class="status">
+        <div class="status-label" data-field="status_label">Busy</div>
+        <div class="headline" data-field="headline">In a Meeting</div>
+        <div class="detail" data-field="detail">Busy right now.</div>
+      </section>
+
+      <section class="next">
+        <div class="label">Next Available</div>
+        <div class="next-time" data-field="next_available">16:16</div>
+      </section>
+
+      <section class="bottom">
+        <div class="hours">
+          <div class="label">Today's Hours</div>
+          <div class="hours-value" data-field="todays_hours">09:30-12:00 / 13:00-17:00</div>
+        </div>
+        <div class="agenda-label label">Up Next</div>
+        <div class="agenda">
+          <div class="agenda-item">
+            <div class="agenda-time" data-field="up_next_1_time">15:31-16:16</div>
+            <div class="agenda-title" data-field="up_next_1_title">Busy</div>
+          </div>
+          <div class="agenda-item second">
+            <div class="agenda-time" data-field="up_next_2_time">17:21-18:21</div>
+            <div class="agenda-title" data-field="up_next_2_title">Office Hours</div>
+          </div>
+        </div>
+      </section>
+
+      <div class="updated">Updated <span data-field="updated_at">Jun 15, 15:51</span></div>
+    </main>
+
+    <script>
+      const fallbackStatus = {
+        display_name: "Hyunwoo Kim",
+        date: "Mon, Jun 15",
+        state: "busy",
+        status_label: "Busy",
+        headline: "In a Meeting",
+        detail: "Busy right now.",
+        next_available: "16:16",
+        todays_hours: "09:30-12:00 / 13:00-17:00",
+        up_next_1_time: "15:31-16:16",
+        up_next_1_title: "Busy",
+        up_next_2_time: "17:21-18:21",
+        up_next_2_title: "Office Hours",
+        updated_at: "Jun 15, 15:51"
+      };
+
+      const params = new URLSearchParams(window.location.search);
+      const refreshMs = 60 * 60 * 1000;
+      const dataUrl =
+        params.get("data") ||
+        window.OFFICE_HOURS_DATA_URL ||
+        "https://raw.githubusercontent.com/ChungmaruQ/desktop-tutorial/master/sensecraft.json";
+
+      function withCacheBust(url) {
+        const nextUrl = new URL(url);
+        nextUrl.searchParams.set("_", Date.now().toString());
+        return nextUrl.toString();
+      }
+
+      function applyStatus(status) {
+        document.querySelectorAll("[data-field]").forEach((element) => {
+          const field = element.getAttribute("data-field");
+          if (status[field] !== undefined && status[field] !== null && status[field] !== "") {
+            element.textContent = status[field];
+          }
+        });
+
+        const state = status.state || "";
+        const root = document.documentElement;
+        if (state === "available") {
+          root.style.setProperty("--accent", "#2f7b65");
+          root.style.setProperty("--accent-soft", "#dcebe5");
+        } else if (state === "away") {
+          root.style.setProperty("--accent", "#a93636");
+          root.style.setProperty("--accent-soft", "#eedada");
+        } else if (state === "focus") {
+          root.style.setProperty("--accent", "#6a4f9a");
+          root.style.setProperty("--accent-soft", "#e2dced");
+        } else if (state === "remote") {
+          root.style.setProperty("--accent", "#2f6577");
+          root.style.setProperty("--accent-soft", "#dbe7ea");
+        }
+      }
+
+      async function loadStatus() {
+        if (!dataUrl) {
+          applyStatus(fallbackStatus);
+          return;
+        }
+
+        try {
+          const response = await fetch(withCacheBust(dataUrl), { cache: "no-store" });
+          if (!response.ok) throw new Error("Status fetch failed");
+          applyStatus(await response.json());
+        } catch (error) {
+          applyStatus(fallbackStatus);
+        }
+      }
+
+      loadStatus();
+      if (dataUrl) {
+        setInterval(loadStatus, refreshMs);
+      }
+    </script>
+  </body>
+</html>
