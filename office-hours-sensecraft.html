@@ -106,17 +106,48 @@
         white-space: nowrap;
       }
 
-      .battery-level {
+      .battery-gauge {
         display: none;
         flex: 0 0 auto;
-        padding: 5px 8px;
+        position: relative;
+        align-items: center;
+        width: 74px;
+        height: 30px;
         border: 2px solid #1f2d30;
         border-radius: 6px;
-        background: var(--sun);
+        background: #fffdf8;
         color: #1f2d30;
-        font-size: 16px;
+      }
+
+      .battery-gauge::after {
+        content: "";
+        position: absolute;
+        right: -6px;
+        top: 9px;
+        width: 4px;
+        height: 8px;
+        border-radius: 0 3px 3px 0;
+        background: #1f2d30;
+      }
+
+      .battery-fill {
+        position: absolute;
+        left: 3px;
+        top: 3px;
+        bottom: 3px;
+        width: 0%;
+        border-radius: 3px;
+        background: var(--battery-color, var(--leaf));
+      }
+
+      .battery-text {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        text-align: center;
+        font-size: 15px;
         font-weight: 950;
-        line-height: 1;
+        line-height: 26px;
       }
 
       .date-block {
@@ -347,7 +378,10 @@
           <div class="label">Office Hours</div>
           <div class="name-line">
             <div class="name" data-field="display_name">Hyunwoo Kim</div>
-            <div class="battery-level" data-field="battery_level"></div>
+            <div class="battery-gauge" aria-label="Battery level">
+              <div class="battery-fill" aria-hidden="true"></div>
+              <div class="battery-text" data-field="battery_level"></div>
+            </div>
           </div>
         </div>
         <div class="date-block">
@@ -475,9 +509,29 @@
       }
 
       function updateBatteryVisibility() {
-        const battery = document.querySelector(".battery-level");
-        if (!battery) return;
-        battery.style.display = battery.textContent.trim() ? "inline-block" : "none";
+        const gauge = document.querySelector(".battery-gauge");
+        const fill = document.querySelector(".battery-fill");
+        const text = document.querySelector(".battery-text");
+        if (!gauge || !fill || !text) return;
+
+        const rawValue = text.textContent.trim();
+        if (!rawValue) {
+          gauge.style.display = "none";
+          fill.style.width = "0%";
+          return;
+        }
+
+        const numeric = Number(rawValue.replace("%", ""));
+        const percent = Number.isFinite(numeric) ? Math.max(0, Math.min(100, numeric)) : 0;
+        gauge.style.display = "flex";
+        fill.style.width = `${percent}%`;
+        fill.style.background = batteryColor(percent);
+      }
+
+      function batteryColor(percent) {
+        if (percent < 30) return "#d64545";
+        if (percent < 60) return "#f2be3e";
+        return "#22a06b";
       }
 
       async function loadStatus() {
