@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=800, height=480, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta http-equiv="refresh" content="3600">
     <title>Office Hours Door Display</title>
     <style>
@@ -25,8 +25,8 @@
 
       html,
       body {
-        width: 800px;
-        height: 480px;
+        width: 100%;
+        height: 100%;
         margin: 0;
         overflow: hidden;
         background: var(--bg);
@@ -40,6 +40,8 @@
         height: 480px;
         overflow: hidden;
         background: var(--bg);
+        transform: scale(var(--scale, 1));
+        transform-origin: top left;
       }
 
       .label {
@@ -90,10 +92,55 @@
         line-height: 1;
       }
 
+      .battery {
+        position: absolute;
+        right: 245px;
+        top: 26px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 15px;
+        font-weight: 900;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .battery-icon {
+        position: relative;
+        width: 34px;
+        height: 17px;
+        border: 2px solid var(--muted);
+        border-radius: 3px;
+      }
+
+      .battery-icon::after {
+        content: "";
+        position: absolute;
+        right: -5px;
+        top: 4px;
+        width: 3px;
+        height: 5px;
+        border-radius: 0 2px 2px 0;
+        background: var(--muted);
+      }
+
+      .battery-fill {
+        position: absolute;
+        left: 2px;
+        top: 2px;
+        bottom: 2px;
+        width: 0%;
+        border-radius: 1px;
+        background: var(--accent);
+      }
+
       .status-dot {
         position: absolute;
         left: 21px;
         top: 174px;
+        display: grid;
+        place-items: center;
         width: 84px;
         height: 84px;
         border: 7px solid #d2c6b8;
@@ -103,14 +150,12 @@
 
       .status-dot::after {
         content: "";
-        position: absolute;
-        left: 22px;
-        top: 22px;
-        width: 26px;
-        height: 26px;
+        width: 38px;
+        height: 38px;
         border: 7px solid var(--accent);
         border-radius: 50%;
         background: var(--accent);
+        box-sizing: border-box;
       }
 
       .status {
@@ -167,10 +212,12 @@
         position: absolute;
         left: 17px;
         top: 127px;
+        width: 150px;
         color: var(--accent);
-        font-size: 34px;
+        font-size: 28px;
         font-weight: 950;
-        line-height: 1;
+        line-height: 1.08;
+        white-space: normal;
       }
 
       .bottom {
@@ -268,6 +315,12 @@
           <div class="label">Today</div>
           <div class="date" data-field="date">Mon, Jun 15</div>
         </div>
+        <div class="battery" aria-label="Battery">
+          <span class="battery-icon" aria-hidden="true">
+            <span class="battery-fill"></span>
+          </span>
+          <span data-field="battery_level">--%</span>
+        </div>
       </section>
 
       <div class="status-dot" aria-hidden="true"></div>
@@ -328,6 +381,13 @@
         window.OFFICE_HOURS_DATA_URL ||
         "https://raw.githubusercontent.com/ChungmaruQ/desktop-tutorial/master/sensecraft.json";
 
+      function fitCanvasToViewport() {
+        const width = window.innerWidth || 800;
+        const height = window.innerHeight || 480;
+        const scale = Math.min(1, width / 800, height / 480);
+        document.documentElement.style.setProperty("--scale", String(scale || 1));
+      }
+
       function withCacheBust(url) {
         const nextUrl = new URL(url);
         nextUrl.searchParams.set("_", Date.now().toString());
@@ -337,17 +397,19 @@
       function applyStatus(status) {
         document.querySelectorAll("[data-field]").forEach((element) => {
           const field = element.getAttribute("data-field");
-          if (status[field] !== undefined && status[field] !== null && status[field] !== "") {
-            element.textContent = status[field];
+          if (Object.prototype.hasOwnProperty.call(status, field)) {
+            element.textContent = status[field] ?? "";
           }
         });
+
+        updateAgendaVisibility();
 
         const state = status.state || "";
         const root = document.documentElement;
         if (state === "available") {
           root.style.setProperty("--accent", "#2f7b65");
           root.style.setProperty("--accent-soft", "#dcebe5");
-        } else if (state === "away") {
+        } else if (state === "away" || state === "leave") {
           root.style.setProperty("--accent", "#a93636");
           root.style.setProperty("--accent-soft", "#eedada");
         } else if (state === "focus") {
@@ -356,6 +418,57 @@
         } else if (state === "remote") {
           root.style.setProperty("--accent", "#2f6577");
           root.style.setProperty("--accent-soft", "#dbe7ea");
+        } else if (state === "off_hours" || state === "offsite" || state === "closed") {
+          root.style.setProperty("--accent", "#606968");
+          root.style.setProperty("--accent-soft", "#e8e4dd");
+        }
+      }
+
+      function updateAgendaVisibility() {
+        const items = document.querySelectorAll(".agenda-item");
+        let visibleCount = 0;
+        items.forEach((item) => {
+          const hasContent = item.textContent.trim().length > 0;
+          item.style.display = hasContent ? "block" : "none";
+          if (hasContent) visibleCount += 1;
+        });
+
+        const label = document.querySelector(".agenda-label");
+        if (label) {
+          label.style.display = visibleCount > 0 ? "block" : "none";
+        }
+      }
+
+      function renderBattery(battery) {
+        const levelText = document.querySelector("[data-field='battery_level']");
+        const fill = document.querySelector(".battery-fill");
+        if (!levelText || !fill) return;
+
+        if (!battery) {
+          levelText.textContent = "--%";
+          fill.style.width = "0%";
+          return;
+        }
+
+        const percent = Math.round(battery.level * 100);
+        levelText.textContent = `${percent}%`;
+        fill.style.width = `${percent}%`;
+      }
+
+      async function loadBattery() {
+        if (!navigator.getBattery) {
+          renderBattery(null);
+          return;
+        }
+
+        try {
+          const battery = await navigator.getBattery();
+          const update = () => renderBattery(battery);
+          update();
+          battery.addEventListener("levelchange", update);
+          battery.addEventListener("chargingchange", update);
+        } catch (error) {
+          renderBattery(null);
         }
       }
 
@@ -374,7 +487,10 @@
         }
       }
 
+      fitCanvasToViewport();
       loadStatus();
+      loadBattery();
+      window.addEventListener("resize", fitCanvasToViewport);
       if (dataUrl) {
         setInterval(loadStatus, refreshMs);
       }
