@@ -114,49 +114,6 @@
         line-height: 1;
       }
 
-      .battery {
-        position: absolute;
-        right: 248px;
-        top: 32px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--muted);
-        font-size: 15px;
-        font-weight: 900;
-        line-height: 1;
-        white-space: nowrap;
-      }
-
-      .battery-icon {
-        position: relative;
-        width: 34px;
-        height: 17px;
-        border: 2px solid var(--muted);
-        border-radius: 3px;
-      }
-
-      .battery-icon::after {
-        content: "";
-        position: absolute;
-        right: -5px;
-        top: 4px;
-        width: 3px;
-        height: 5px;
-        border-radius: 0 2px 2px 0;
-        background: var(--muted);
-      }
-
-      .battery-fill {
-        position: absolute;
-        left: 2px;
-        top: 2px;
-        bottom: 2px;
-        width: 0%;
-        border-radius: 1px;
-        background: var(--accent);
-      }
-
       .status-dot {
         position: absolute;
         left: 28px;
@@ -373,12 +330,6 @@
           <div class="label">Today</div>
           <div class="date" data-field="date">Mon, Jun 15</div>
         </div>
-        <div class="battery" aria-label="Battery">
-          <span class="battery-icon" aria-hidden="true">
-            <span class="battery-fill"></span>
-          </span>
-          <span data-field="battery_level">--%</span>
-        </div>
       </section>
 
       <div class="status-dot" aria-hidden="true"></div>
@@ -497,39 +448,6 @@
         }
       }
 
-      function renderBattery(battery) {
-        const levelText = document.querySelector("[data-field='battery_level']");
-        const fill = document.querySelector(".battery-fill");
-        if (!levelText || !fill) return;
-
-        if (!battery) {
-          levelText.textContent = "--%";
-          fill.style.width = "0%";
-          return;
-        }
-
-        const percent = Math.round(battery.level * 100);
-        levelText.textContent = `${percent}%`;
-        fill.style.width = `${percent}%`;
-      }
-
-      async function loadBattery() {
-        if (!navigator.getBattery) {
-          renderBattery(null);
-          return;
-        }
-
-        try {
-          const battery = await navigator.getBattery();
-          const update = () => renderBattery(battery);
-          update();
-          battery.addEventListener("levelchange", update);
-          battery.addEventListener("chargingchange", update);
-        } catch (error) {
-          renderBattery(null);
-        }
-      }
-
       async function loadStatus() {
         if (!dataUrl) {
           applyStatus(fallbackStatus);
@@ -547,7 +465,6 @@
 
       fitCanvasToViewport();
       loadStatus();
-      loadBattery();
       window.addEventListener("resize", fitCanvasToViewport);
       if (dataUrl) {
         setInterval(loadStatus, refreshMs);
