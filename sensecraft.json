@@ -8,6 +8,7 @@
   "next_available": "Tomorrow 09:30",
   "current_until": "Tomorrow 09:30",
   "todays_hours": "09:30-12:00 / 13:00-17:00",
+  "battery_level": "83%",
   "up_next_1_time": "",
   "up_next_1_title": "",
   "up_next_1_type": "",
@@ -17,6 +18,6 @@
   "up_next_3_time": "",
   "up_next_3_title": "",
   "up_next_3_type": "",
-  "updated_at": "Jun 15, 17:53",
+  "updated_at": "Jun 15, 21:46",
   "source": "calendar"
 }

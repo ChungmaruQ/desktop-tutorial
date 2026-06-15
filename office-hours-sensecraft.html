@@ -87,15 +87,36 @@
         top: 18px;
       }
 
-      .name {
+      .name-line {
         margin-top: 7px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
         max-width: 430px;
+      }
+
+      .name {
+        min-width: 0;
+        max-width: 320px;
         overflow: hidden;
         color: var(--ink);
         font-size: 30px;
         font-weight: 900;
         line-height: 1;
         white-space: nowrap;
+      }
+
+      .battery-level {
+        display: none;
+        flex: 0 0 auto;
+        padding: 5px 8px;
+        border: 2px solid #1f2d30;
+        border-radius: 6px;
+        background: var(--sun);
+        color: #1f2d30;
+        font-size: 16px;
+        font-weight: 950;
+        line-height: 1;
       }
 
       .date-block {
@@ -324,7 +345,10 @@
       <section class="top">
         <div class="brand">
           <div class="label">Office Hours</div>
-          <div class="name" data-field="display_name">Hyunwoo Kim</div>
+          <div class="name-line">
+            <div class="name" data-field="display_name">Hyunwoo Kim</div>
+            <div class="battery-level" data-field="battery_level"></div>
+          </div>
         </div>
         <div class="date-block">
           <div class="label">Today</div>
@@ -376,6 +400,7 @@
         detail: "Busy right now.",
         next_available: "16:16",
         todays_hours: "09:30-12:00 / 13:00-17:00",
+        battery_level: "",
         up_next_1_time: "15:31-16:16",
         up_next_1_title: "Busy",
         up_next_2_time: "17:21-18:21",
@@ -412,6 +437,7 @@
         });
 
         updateAgendaVisibility();
+        updateBatteryVisibility();
 
         const state = status.state || "";
         const root = document.documentElement;
@@ -446,6 +472,12 @@
         if (label) {
           label.style.display = visibleCount > 0 ? "block" : "none";
         }
+      }
+
+      function updateBatteryVisibility() {
+        const battery = document.querySelector(".battery-level");
+        if (!battery) return;
+        battery.style.display = battery.textContent.trim() ? "inline-block" : "none";
       }
 
       async function loadStatus() {
