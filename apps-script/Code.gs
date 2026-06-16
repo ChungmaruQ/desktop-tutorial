@@ -399,12 +399,6 @@ function computeStatus_(config, now, events, connection) {
   }
 
   var nextAvailableAt = findNextAvailable_(config, now, events);
-  if (state === "focus" && currentUntil) {
-    nextAvailableAt = currentUntil;
-  }
-  if (state === "lunch" && currentUntil) {
-    nextAvailableAt = currentUntil;
-  }
   var agenda = events
     .filter(function(event) {
       return event.end > now;
@@ -1099,6 +1093,12 @@ function findNextAvailable_(config, now, events) {
       continue;
     }
 
+    var implicitBlocker = implicitAvailabilityBlocker_(config, candidate);
+    if (implicitBlocker) {
+      candidate = new Date(implicitBlocker.end);
+      continue;
+    }
+
     var blocker = events.find(function(event) {
       return includesTime_(event, candidate) &&
         ((isBusyEvent_(event) && !isOfficeEvent_(config, event)) ||
@@ -1114,6 +1114,10 @@ function findNextAvailable_(config, now, events) {
   }
 
   return null;
+}
+
+function implicitAvailabilityBlocker_(config, date) {
+  return implicitFocusTime_(config, date) || implicitLunchBreak_(config, date);
 }
 
 function presentAgendaEvent_(config, event) {
