@@ -1170,13 +1170,13 @@ function toSenseCraftStatus_(status, config) {
     todays_hours: status.officeHoursText || "",
     away_days: status.awayDays || [],
     battery_level: formatBatteryLevel_(status.batteryLevel),
-    up_next_1_time: formatAgendaRange_(first, config),
+    up_next_1_time: formatAgendaRange_(first, config, status.now),
     up_next_1_title: first && first.title ? first.title : "",
     up_next_1_type: first && first.type ? first.type : "",
-    up_next_2_time: formatAgendaRange_(second, config),
+    up_next_2_time: formatAgendaRange_(second, config, status.now),
     up_next_2_title: second && second.title ? second.title : "",
     up_next_2_type: second && second.type ? second.type : "",
-    up_next_3_time: formatAgendaRange_(third, config),
+    up_next_3_time: formatAgendaRange_(third, config, status.now),
     up_next_3_title: third && third.title ? third.title : "",
     up_next_3_type: third && third.type ? third.type : "",
     updated_at: formatDateTimeLabel_(status.generatedAt, config),
@@ -1377,14 +1377,32 @@ function formatSentenceDateTime_(value, nowValue, config) {
     .replace(/^Tomorrow\b/, "tomorrow");
 }
 
-function formatAgendaRange_(item, config) {
+function formatAgendaRange_(item, config, nowValue) {
   if (!item) {
     return "";
   }
+
+  var start = new Date(item.start);
+  var end = new Date(item.end);
+  var prefix = agendaDatePrefix_(start, nowValue, config);
+
   if (item.allDay) {
-    return "All Day";
+    return prefix ? prefix + " All Day" : "All Day";
   }
-  return formatTime_(new Date(item.start), config) + "-" + formatTime_(new Date(item.end), config);
+  return (prefix ? prefix + " " : "") + formatTime_(start, config) + "-" + formatTime_(end, config);
+}
+
+function agendaDatePrefix_(date, nowValue, config) {
+  var now = nowValue ? new Date(nowValue) : new Date();
+  if (sameLocalDate_(date, now, config)) {
+    return "";
+  }
+
+  if (sameLocalDate_(date, addDays_(now, 1), config)) {
+    return "Tomorrow";
+  }
+
+  return Utilities.formatDate(date, config.timeZone, "MMM d");
 }
 
 function formatTime_(date, config) {
