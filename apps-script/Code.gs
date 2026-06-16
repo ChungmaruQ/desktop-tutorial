@@ -1,5 +1,5 @@
 var DEFAULT_CONFIG = {
-  displayName: "Prof. Hyunwoo Kim",
+  displayName: "Prof. Your Name",
   calendarId: "primary",
   timeZone: "Asia/Seoul",
   showEventTitles: false,
@@ -36,7 +36,7 @@ var DEFAULT_CONFIG = {
     end: "13:00"
   },
   officeEventKeywords: ["office hour", "office hours", "오피스아워", "상담"],
-  officeLocationKeywords: ["경기도 일산동구 동국로 32"],
+  officeLocationKeywords: ["YOUR_OFFICE_ADDRESS_OR_ROOM_KEYWORD"],
   awayKeywords: ["ooo", "out of office", "부재", "휴가", "출장"],
   titleStatusKeywords: {
     travel: ["출장", "외근", "business trip", "offsite"],
