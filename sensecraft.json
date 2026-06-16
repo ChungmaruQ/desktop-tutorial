@@ -5,7 +5,7 @@
   "status_label": "Do Not Disturb",
   "headline": "Focus Time",
   "detail": "Please do not disturb.",
-  "next_available": "10:12",
+  "next_available": "13:00",
   "current_until": "12:00",
   "todays_hours": "09:30-12:00 / 13:00-17:00",
   "away_days": [
@@ -22,6 +22,6 @@
   "up_next_3_time": "",
   "up_next_3_title": "",
   "up_next_3_type": "",
-  "updated_at": "Jun 16, 10:12",
+  "updated_at": "Jun 16, 10:25",
   "source": "calendar"
 }
