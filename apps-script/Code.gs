@@ -385,6 +385,9 @@ function computeStatus_(config, now, events, connection) {
   }
 
   var nextAvailableAt = findNextAvailable_(config, now, events);
+  if (state === "focus" && currentUntil) {
+    nextAvailableAt = currentUntil;
+  }
   var agenda = events
     .filter(function(event) {
       return event.end > now;
