@@ -5,7 +5,7 @@
   "status_label": "Available",
   "headline": "Available",
   "detail": "Visits welcome.",
-  "next_available": "13:40",
+  "next_available": "13:55",
   "current_until": "17:00",
   "todays_hours": "09:30-12:00 / 13:00-17:00",
   "away_days": [
@@ -22,6 +22,6 @@
   "up_next_3_time": "",
   "up_next_3_title": "",
   "up_next_3_type": "",
-  "updated_at": "Jun 16, 13:40",
+  "updated_at": "Jun 16, 13:55",
   "source": "calendar"
 }
