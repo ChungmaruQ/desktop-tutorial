@@ -42,6 +42,7 @@ var DEFAULT_CONFIG = {
     travel: ["출장", "외근", "business trip", "offsite"],
     leave: ["휴가", "연차", "반차", "vacation", "pto", "leave", "day off"],
     focus: ["focus", "집중", "방해 금지", "do not disturb"],
+    teaching: ["수업", "강의", "강좌", "실습", "class", "lecture", "teaching", "course"],
     meeting: ["회의", "미팅", "meeting", "mtg", "seminar", "세미나", "call"]
   }
 };
@@ -316,7 +317,7 @@ function computeStatus_(config, now, events, connection) {
   var currentBusy = firstMatching_(currentEvents, function(event) {
     return isBusyEvent_(event) && !isOfficeEvent_(config, event);
   });
-  var currentImplicitFocus = currentBusy ? null : implicitFocusTime_(config, now);
+  var currentImplicitFocus = currentBusy || currentTitleStatus ? null : implicitFocusTime_(config, now);
   var currentLunch = implicitLunchBreak_(config, now);
 
   var state = "closed";
@@ -324,22 +325,7 @@ function computeStatus_(config, now, events, connection) {
   var detail = "Visits are not available right now.";
   var currentUntil = officeInfo.nextWindow ? officeInfo.nextWindow.start : null;
 
-  if (!officeInfo.isOpen) {
-    if (currentLunch && !currentAway && !currentOffsite && !currentTitleStatus &&
-        !(currentWorkingLocationInfo && !currentWorkingLocationInfo.availableHere) && !currentBusy) {
-      state = "lunch";
-      headline = "Lunch Break";
-      detail = "Back at " + formatTime_(currentLunch.end, config) + ".";
-      currentUntil = currentLunch.end;
-    } else {
-      state = "off_hours";
-      headline = "Out of Office";
-      detail = officeInfo.nextWindow
-        ? "Back " + formatSentenceDateTime_(officeInfo.nextWindow.start, now, config) + "."
-        : "Office hours are closed.";
-      currentUntil = officeInfo.nextWindow ? officeInfo.nextWindow.start : null;
-    }
-  } else if (isGeofenceAway_(config, now)) {
+  if (isGeofenceAway_(config, now)) {
     state = "offsite";
     headline = "Out of Office";
     detail = "Away from the office.";
@@ -354,16 +340,16 @@ function computeStatus_(config, now, events, connection) {
     headline = "Out of Office";
     detail = "Offsite appointment.";
     currentUntil = currentOffsite.end;
-  } else if ((currentLlmStatus = classifyCurrentStatusWithLlm_(config, now, currentEvents))) {
-    state = currentLlmStatus.state;
-    headline = currentLlmStatus.headline;
-    detail = currentLlmStatus.detail;
-    currentUntil = currentLlmStatus.currentUntil;
   } else if (currentTitleStatus) {
     state = currentTitleStatus.state;
     headline = currentTitleStatus.headline;
     detail = currentTitleStatus.detail;
     currentUntil = currentTitleStatus.event.end;
+  } else if ((currentLlmStatus = classifyCurrentStatusWithLlm_(config, now, currentEvents))) {
+    state = currentLlmStatus.state;
+    headline = currentLlmStatus.headline;
+    detail = currentLlmStatus.detail;
+    currentUntil = currentLlmStatus.currentUntil;
   } else if (currentWorkingLocationInfo && !currentWorkingLocationInfo.availableHere) {
     state = "remote";
     headline = "Working Remotely";
@@ -381,9 +367,23 @@ function computeStatus_(config, now, events, connection) {
     currentUntil = currentImplicitFocus.end;
   } else if (currentBusy) {
     state = "busy";
-    headline = "In a Meeting";
-    detail = config.showEventTitles ? currentBusy.summary || "Busy" : "Busy right now.";
+    headline = "Busy";
+    detail = "Busy right now.";
     currentUntil = currentBusy.end;
+  } else if (!officeInfo.isOpen) {
+    if (currentLunch) {
+      state = "lunch";
+      headline = "Lunch Break";
+      detail = "Back at " + formatTime_(currentLunch.end, config) + ".";
+      currentUntil = currentLunch.end;
+    } else {
+      state = "off_hours";
+      headline = "Out of Office";
+      detail = officeInfo.nextWindow
+        ? "Back " + formatSentenceDateTime_(officeInfo.nextWindow.start, now, config) + "."
+        : "Office hours are closed.";
+      currentUntil = officeInfo.nextWindow ? officeInfo.nextWindow.start : null;
+    }
   } else if (currentWorkingLocationInfo) {
     state = "available";
     headline = "At the Office";
@@ -744,13 +744,16 @@ function llmStatusInstructions_() {
   return [
     "Classify Prof. Hyunwoo Kim's current office-door status from calendar events.",
     "The display is public, so never reveal event titles, private names, or exact locations.",
+    "All user-facing status labels, headlines, and details must be in English.",
     "Return only the structured JSON schema fields.",
     "Use Korean and English context in titles.",
     "Prefer the most restrictive accurate status.",
     "Use offsite for business trips, external appointments, conferences, seminars away from the office, or non-office locations.",
     "Use leave for vacation, PTO, annual leave, sick leave, personal leave, or all-day leave.",
     "Use focus for focus time or do-not-disturb work.",
-    "Use busy for meetings, calls, interviews, advising, seminars, reviews, and opaque appointments.",
+    "Use teaching for classes, lectures, courses, labs, or teaching sessions.",
+    "Use meeting for meetings, calls, interviews, advising, seminars, or reviews.",
+    "Use busy for opaque appointments that do not fit a more specific status.",
     "Use remote for working from home or remote work.",
     "Use away for generic out-of-office or unavailable status that is not leave or travel.",
     "If the events should not change the display status, set should_override to false and state to available."
@@ -768,11 +771,11 @@ function llmStatusSchema_() {
       },
       state: {
         type: "string",
-        enum: ["available", "busy", "away", "leave", "focus", "remote", "offsite"]
+        enum: ["available", "busy", "meeting", "away", "leave", "focus", "teaching", "remote", "offsite"]
       },
       detail_kind: {
         type: "string",
-        enum: ["available", "busy", "away", "leave", "focus", "remote", "offsite", "travel"]
+        enum: ["available", "busy", "meeting", "away", "leave", "focus", "teaching", "remote", "offsite", "travel"]
       },
       event_id: {
         type: "string",
@@ -818,8 +821,13 @@ function statusFromLlmClassification_(classification) {
     },
     busy: {
       state: "busy",
-      headline: "In a Meeting",
+      headline: "Busy",
       detail: "Busy right now."
+    },
+    meeting: {
+      state: "meeting",
+      headline: "In a Meeting",
+      detail: "Meeting in progress."
     },
     away: {
       state: "away",
@@ -835,6 +843,11 @@ function statusFromLlmClassification_(classification) {
       state: "focus",
       headline: "Focus Time",
       detail: "Please do not disturb."
+    },
+    teaching: {
+      state: "teaching",
+      headline: "In Class",
+      detail: "Class in session."
     },
     remote: {
       state: "remote",
@@ -908,11 +921,18 @@ function titleStatusForEvent_(config, event) {
       detail: "Please do not disturb."
     };
   }
+  if (includesKeyword_(title, keywords.teaching || [])) {
+    return {
+      state: "teaching",
+      headline: "In Class",
+      detail: "Class in session."
+    };
+  }
   if (includesKeyword_(title, keywords.meeting || [])) {
     return {
-      state: "busy",
+      state: "meeting",
       headline: "In a Meeting",
-      detail: "Busy right now."
+      detail: "Meeting in progress."
     };
   }
   return null;
@@ -1122,10 +1142,9 @@ function implicitAvailabilityBlocker_(config, date) {
 
 function presentAgendaEvent_(config, event) {
   var type = agendaType_(config, event);
-  var title = config.showEventTitles && event.summary ? event.summary : type.label;
   return {
     id: event.id,
-    title: title,
+    title: type.label,
     type: type.key,
     start: event.start.toISOString(),
     end: event.end.toISOString(),
@@ -1134,6 +1153,13 @@ function presentAgendaEvent_(config, event) {
 }
 
 function agendaType_(config, event) {
+  var titleStatus = titleStatusForEvent_(config, event);
+  if (titleStatus && titleStatus.state === "teaching") {
+    return { key: "teaching", label: "In Class" };
+  }
+  if (titleStatus && titleStatus.state === "meeting") {
+    return { key: "meeting", label: "Meeting" };
+  }
   if (isAwayEvent_(config, event)) {
     return { key: "away", label: "Away" };
   }
@@ -1325,6 +1351,8 @@ function senseCraftStateLabel_(state) {
   var labels = {
     available: "Available",
     busy: "Busy",
+    meeting: "Meeting",
+    teaching: "In Class",
     away: "Away",
     leave: "On Leave",
     focus: "Do Not Disturb",
@@ -1476,6 +1504,7 @@ function getConfig_() {
     travel: propCsv_(props, "TITLE_TRAVEL_KEYWORDS", config.titleStatusKeywords.travel),
     leave: propCsv_(props, "TITLE_LEAVE_KEYWORDS", config.titleStatusKeywords.leave),
     focus: propCsv_(props, "TITLE_FOCUS_KEYWORDS", config.titleStatusKeywords.focus),
+    teaching: propCsv_(props, "TITLE_TEACHING_KEYWORDS", config.titleStatusKeywords.teaching),
     meeting: propCsv_(props, "TITLE_MEETING_KEYWORDS", config.titleStatusKeywords.meeting)
   };
 
