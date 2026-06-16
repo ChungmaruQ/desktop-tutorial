@@ -5,23 +5,19 @@
   "status_label": "Available",
   "headline": "Available",
   "detail": "Visits welcome.",
-  "next_available": "16:10",
+  "next_available": "16:12",
   "current_until": "17:00",
   "todays_hours": "09:30-12:00 / 13:00-17:00",
-  "away_days": [
-    "thu",
-    "fri"
-  ],
   "battery_level": "",
-  "up_next_1_time": "",
-  "up_next_1_title": "",
-  "up_next_1_type": "",
+  "up_next_1_time": "12:00-14:00",
+  "up_next_1_title": "Busy",
+  "up_next_1_type": "busy",
   "up_next_2_time": "",
   "up_next_2_title": "",
   "up_next_2_type": "",
   "up_next_3_time": "",
   "up_next_3_title": "",
   "up_next_3_type": "",
-  "updated_at": "Jun 16, 16:10",
+  "updated_at": "Jun 16, 16:12",
   "source": "calendar"
 }
