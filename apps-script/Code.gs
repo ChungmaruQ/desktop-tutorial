@@ -30,6 +30,11 @@ var DEFAULT_CONFIG = {
     start: "10:00",
     end: "12:00"
   },
+  lunchBreak: {
+    enabled: true,
+    start: "12:00",
+    end: "13:00"
+  },
   officeEventKeywords: ["office hour", "office hours", "오피스아워", "상담"],
   officeLocationKeywords: ["경기도 일산동구 동국로 32"],
   awayKeywords: ["ooo", "out of office", "부재", "휴가", "출장"],
@@ -312,6 +317,7 @@ function computeStatus_(config, now, events, connection) {
     return isBusyEvent_(event) && !isOfficeEvent_(config, event);
   });
   var currentImplicitFocus = currentBusy ? null : implicitFocusTime_(config, now);
+  var currentLunch = implicitLunchBreak_(config, now);
 
   var state = "closed";
   var headline = "Office Hours Closed";
@@ -319,12 +325,20 @@ function computeStatus_(config, now, events, connection) {
   var currentUntil = officeInfo.nextWindow ? officeInfo.nextWindow.start : null;
 
   if (!officeInfo.isOpen) {
-    state = "off_hours";
-    headline = "Out of Office";
-    detail = officeInfo.nextWindow
-      ? "Back " + formatSentenceDateTime_(officeInfo.nextWindow.start, now, config) + "."
-      : "Office hours are closed.";
-    currentUntil = officeInfo.nextWindow ? officeInfo.nextWindow.start : null;
+    if (currentLunch && !currentAway && !currentOffsite && !currentTitleStatus &&
+        !(currentWorkingLocationInfo && !currentWorkingLocationInfo.availableHere) && !currentBusy) {
+      state = "lunch";
+      headline = "Lunch Break";
+      detail = "Back at " + formatTime_(currentLunch.end, config) + ".";
+      currentUntil = currentLunch.end;
+    } else {
+      state = "off_hours";
+      headline = "Out of Office";
+      detail = officeInfo.nextWindow
+        ? "Back " + formatSentenceDateTime_(officeInfo.nextWindow.start, now, config) + "."
+        : "Office hours are closed.";
+      currentUntil = officeInfo.nextWindow ? officeInfo.nextWindow.start : null;
+    }
   } else if (isGeofenceAway_(config, now)) {
     state = "offsite";
     headline = "Out of Office";
@@ -386,6 +400,9 @@ function computeStatus_(config, now, events, connection) {
 
   var nextAvailableAt = findNextAvailable_(config, now, events);
   if (state === "focus" && currentUntil) {
+    nextAvailableAt = currentUntil;
+  }
+  if (state === "lunch" && currentUntil) {
     nextAvailableAt = currentUntil;
   }
   var agenda = events
@@ -451,8 +468,19 @@ function implicitFocusTime_(config, now) {
     return null;
   }
 
-  var startValue = focusTime.start || "10:00";
-  var endValue = focusTime.end || "12:00";
+  return implicitTimeWindow_(now, focusTime.start || "10:00", focusTime.end || "12:00");
+}
+
+function implicitLunchBreak_(config, now) {
+  var lunchBreak = config.lunchBreak || {};
+  if (lunchBreak.enabled === false) {
+    return null;
+  }
+
+  return implicitTimeWindow_(now, lunchBreak.start || "12:00", lunchBreak.end || "13:00");
+}
+
+function implicitTimeWindow_(now, startValue, endValue) {
   var start = timeOnDate_(now, startValue);
   var end = timeOnDate_(now, endValue);
   if (!(start < end)) {
@@ -1296,6 +1324,7 @@ function senseCraftStateLabel_(state) {
     away: "Away",
     leave: "On Leave",
     focus: "Do Not Disturb",
+    lunch: "Lunch Break",
     remote: "Remote",
     off_hours: "Out of Office",
     offsite: "Out of Office",
@@ -1417,6 +1446,7 @@ function getConfig_() {
   config.showEventTitles = propBool_(props, "SHOW_EVENT_TITLES", config.showEventTitles);
   config.officeHours = propJson_(props, "OFFICE_HOURS_JSON", config.officeHours);
   config.focusTime = propJson_(props, "FOCUS_TIME_JSON", config.focusTime);
+  config.lunchBreak = propJson_(props, "LUNCH_BREAK_JSON", config.lunchBreak);
   config.officeEventKeywords = propCsv_(props, "OFFICE_EVENT_KEYWORDS", config.officeEventKeywords);
   config.officeLocationKeywords = propCsv_(props, "OFFICE_LOCATION_KEYWORDS", config.officeLocationKeywords);
   config.awayKeywords = propCsv_(props, "AWAY_KEYWORDS", config.awayKeywords);
