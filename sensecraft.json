@@ -1,12 +1,12 @@
 {
   "display_name": "Prof. Hyunwoo Kim",
   "date": "Wed, Jun 17",
-  "state": "off_hours",
-  "status_label": "Out of Office",
-  "headline": "Out of Office",
-  "detail": "Back 09:30.",
-  "next_available": "09:30",
-  "current_until": "09:30",
+  "state": "available",
+  "status_label": "Available",
+  "headline": "Available",
+  "detail": "Visits welcome.",
+  "next_available": "09:36",
+  "current_until": "12:00",
   "todays_hours": "09:30-12:00 / 13:00-17:00",
   "away_days": [
     "thu",
@@ -22,6 +22,6 @@
   "up_next_3_time": "",
   "up_next_3_title": "",
   "up_next_3_type": "",
-  "updated_at": "Jun 17, 09:21",
+  "updated_at": "Jun 17, 09:36",
   "source": "calendar"
 }
